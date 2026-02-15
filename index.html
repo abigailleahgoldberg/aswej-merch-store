@@ -20,13 +20,13 @@
     
     <main>
         <section class="products">
-            <article class="product-card">
+            <article class="product-card" data-product="tee">
                 <img src="https://files.cdn.printful.com/files/b4e/b4ebbc30701e79902092467a74f74124_preview.png" alt="JewSA Basic Tee">
                 <h2>JewSA Basic Tee</h2>
                 <p class="price">$29.99</p>
                 <p class="description">Not your bubbe's basic tee! Show your stars, stripes, and chutzpah with our flagship shirt.</p>
                 <div class="variants">
-                    <select id="tee-size">
+                    <select id="tee-size" aria-label="Size">
                         <option value="">Select Size</option>
                         <option value="S">S</option>
                         <option value="M">M</option>
@@ -34,22 +34,22 @@
                         <option value="XL">XL</option>
                     </select>
                 </div>
-                <button onclick="addTeeToCart()">Add to Cart</button>
+                <button class="buy-button">Add to Cart</button>
             </article>
 
-            <article class="product-card">
+            <article class="product-card" data-product="hat">
                 <img src="https://files.cdn.printful.com/files/3f4/3f41dd5bee9414a4c43fcefc2a63a429_preview.png" alt="JewSA Old School Bucket Hat">
                 <h2>JewSA Old School Bucket Hat</h2>
                 <p class="price">$24.99</p>
                 <p class="description">Keep your keppah cool! The perfect blend of old school style and new school pride.</p>
                 <div class="variants">
-                    <select id="hat-size">
+                    <select id="hat-size" aria-label="Size">
                         <option value="">Select Size</option>
                         <option value="S/M">S/M</option>
                         <option value="L/XL">L/XL</option>
                     </select>
                 </div>
-                <button onclick="addHatToCart()">Add to Cart</button>
+                <button class="buy-button">Add to Cart</button>
             </article>
         </section>
 
@@ -64,18 +64,65 @@
     </footer>
 
     <script>
-        // Simple cart functionality
-        let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        // Cart storage key - must match cart page
+        const CART_STORAGE_KEY = 'jewsa-cart';
+        
+        // Shopping cart
+        let cart = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || '[]');
+
+        // Product data
+        const PRODUCTS = {
+            tee: {
+                id: '419473357',
+                name: 'JewSA Basic Tee',
+                price: 29.99,
+                image: 'https://files.cdn.printful.com/files/b4e/b4ebbc30701e79902092467a74f74124_preview.png'
+            },
+            hat: {
+                id: '419417492',
+                name: 'JewSA Old School Bucket Hat',
+                price: 24.99,
+                image: 'https://files.cdn.printful.com/files/3f4/3f41dd5bee9414a4c43fcefc2a63a429_preview.png'
+            }
+        };
+
+        function addToCart(productType, size) {
+            console.log('Adding to cart:', { productType, size });
+            
+            if (!size) {
+                alert('Please select a size first');
+                return;
+            }
+
+            const product = PRODUCTS[productType];
+            const existingItem = cart.find(item => item.id === product.id && item.size === size);
+
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({
+                    ...product,
+                    size,
+                    quantity: 1
+                });
+            }
+
+            localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+            updateCartDisplay();
+            showCartNotification('Item added to cart!');
+        }
 
         function updateCartDisplay() {
+            console.log('Updating cart display with items:', cart);
+            
             // Update cart count
             const count = cart.reduce((sum, item) => sum + item.quantity, 0);
             document.getElementById('cart-count').textContent = count;
             
             // Update cart items
             const cartItems = document.getElementById('cart-items');
-            if (cart.length === 0) {
-                cartItems.innerHTML = '<p>Your cart is empty</p>';
+            if (!cart.length) {
+                cartItems.innerHTML = '<p class="empty-cart">Your cart is empty</p>';
                 return;
             }
 
@@ -86,76 +133,79 @@
                 total += item.price * item.quantity;
                 html += `
                     <div class="cart-item">
-                        <img src="${item.image}" alt="${item.name}" width="50">
-                        <div>
+                        <img src="${item.image}" alt="${item.name}">
+                        <div class="item-details">
                             <h3>${item.name}</h3>
                             <p>Size: ${item.size}</p>
-                            <p>$${item.price.toFixed(2)} × ${item.quantity}</p>
+                            <p class="item-price">$${(item.price * item.quantity).toFixed(2)}</p>
                         </div>
-                        <button onclick="removeFromCart('${item.id}')">Remove</button>
+                        <div class="item-actions">
+                            <button onclick="updateQuantity('${item.id}', '${item.size}', ${item.quantity - 1})">−</button>
+                            <span>${item.quantity}</span>
+                            <button onclick="updateQuantity('${item.id}', '${item.size}', ${item.quantity + 1})">+</button>
+                        </div>
                     </div>
                 `;
             });
 
             html += `
-                <div class="cart-total">
-                    <strong>Total: $${total.toFixed(2)}</strong>
+                <div class="cart-summary">
+                    <div class="cart-total">
+                        <span>Total: $${total.toFixed(2)}</span>
+                    </div>
+                    <a href="/cart" class="button">View Cart</a>
                 </div>
             `;
 
             cartItems.innerHTML = html;
         }
 
-        function addTeeToCart() {
-            const size = document.getElementById('tee-size').value;
-            if (!size) {
-                alert('Please select a size');
-                return;
+        function updateQuantity(productId, size, newQuantity) {
+            console.log('Updating quantity:', { productId, size, newQuantity });
+            
+            if (newQuantity < 1) {
+                cart = cart.filter(item => !(item.id === productId && item.size === size));
+            } else {
+                const item = cart.find(item => item.id === productId && item.size === size);
+                if (item) {
+                    item.quantity = newQuantity;
+                }
             }
+            
+            localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+            updateCartDisplay();
+        }
 
-            cart.push({
-                id: '419473357',
-                name: 'JewSA Basic Tee',
-                price: 29.99,
-                size: size,
-                quantity: 1,
-                image: 'https://files.cdn.printful.com/files/b4e/b4ebbc30701e79902092467a74f74124_preview.png'
+        function showCartNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'cart-notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 2000);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Shop page loaded, initializing...');
+            
+            // Add to cart button handlers
+            document.querySelectorAll('.buy-button').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const card = e.target.closest('.product-card');
+                    const productType = card.dataset.product;
+                    const select = card.querySelector('select');
+                    const size = select.value;
+
+                    addToCart(productType, size);
+                });
             });
 
-            localStorage.setItem('cart', JSON.stringify(cart));
+            // Initialize cart display
             updateCartDisplay();
-            alert('Added to cart!');
-        }
-
-        function addHatToCart() {
-            const size = document.getElementById('hat-size').value;
-            if (!size) {
-                alert('Please select a size');
-                return;
-            }
-
-            cart.push({
-                id: '419417492',
-                name: 'JewSA Old School Bucket Hat',
-                price: 24.99,
-                size: size,
-                quantity: 1,
-                image: 'https://files.cdn.printful.com/files/3f4/3f41dd5bee9414a4c43fcefc2a63a429_preview.png'
-            });
-
-            localStorage.setItem('cart', JSON.stringify(cart));
-            updateCartDisplay();
-            alert('Added to cart!');
-        }
-
-        function removeFromCart(productId) {
-            cart = cart.filter(item => item.id !== productId);
-            localStorage.setItem('cart', JSON.stringify(cart));
-            updateCartDisplay();
-        }
-
-        // Initialize cart display
-        updateCartDisplay();
+        });
     </script>
 </body>
 </html>
