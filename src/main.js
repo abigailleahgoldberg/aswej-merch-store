@@ -1,6 +1,12 @@
 // Import styles
 import './style.css';
 
+// Debug environment variables
+console.log('Environment check:', {
+  hasStripeKey: !!import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY,
+  keyPrefix: import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY?.substring(0, 7)
+});
+
 // Product data
 const PRODUCTS = {
   tee: {
@@ -17,12 +23,26 @@ const PRODUCTS = {
   }
 };
 
+// Initialize Stripe only when needed
+let stripeInstance = null;
+function getStripe() {
+  if (!stripeInstance) {
+    const key = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+    if (!key) {
+      console.error('Stripe key not found in environment');
+      return null;
+    }
+    stripeInstance = window.Stripe(key);
+  }
+  return stripeInstance;
+}
+
 // Cart state
 let cart = JSON.parse(localStorage.getItem('jewsa-cart') || '[]');
 
-// Simple function to add items to cart
-function addToCart(productType, size) {
-  console.log('Adding to cart:', productType, size);
+// Add to cart function
+window.addToCart = function(productType, size) {
+  console.log('Adding to cart:', { productType, size });
   
   if (!size) {
     alert('Please select a size first');
@@ -42,19 +62,14 @@ function addToCart(productType, size) {
     });
   }
 
-  // Save cart
   localStorage.setItem('jewsa-cart', JSON.stringify(cart));
-  
-  // Update display
   updateCartDisplay();
-  
-  // Show notification
   showNotification('Item added to cart!');
-}
+};
 
 // Update cart display
 function updateCartDisplay() {
-  console.log('Updating cart display');
+  console.log('Updating cart:', cart);
   
   // Update cart count
   const cartCount = document.getElementById('cart-count');
@@ -84,9 +99,9 @@ function updateCartDisplay() {
             <p>$${item.price.toFixed(2)} × ${item.quantity}</p>
           </div>
           <div class="cart-item-actions">
-            <button onclick="updateQuantity('${item.id}', '${item.size}', ${item.quantity - 1})">-</button>
+            <button onclick="window.updateQuantity('${item.id}', '${item.size}', ${item.quantity - 1})">-</button>
             <span>${item.quantity}</span>
-            <button onclick="updateQuantity('${item.id}', '${item.size}', ${item.quantity + 1})">+</button>
+            <button onclick="window.updateQuantity('${item.id}', '${item.size}', ${item.quantity + 1})">+</button>
           </div>
         </div>
       `).join('')}
@@ -95,7 +110,7 @@ function updateCartDisplay() {
           <span>Total:</span>
           <span>$${total.toFixed(2)}</span>
         </div>
-        <button onclick="checkout()" class="checkout-button">Checkout</button>
+        <button onclick="window.checkout()" class="checkout-button">Checkout</button>
       </div>
     `;
   }
@@ -114,7 +129,9 @@ function showNotification(message) {
 }
 
 // Update quantity
-function updateQuantity(productId, size, newQuantity) {
+window.updateQuantity = function(productId, size, newQuantity) {
+  console.log('Updating quantity:', { productId, size, newQuantity });
+  
   if (newQuantity < 1) {
     cart = cart.filter(item => !(item.id === productId && item.size === size));
   } else {
@@ -126,11 +143,15 @@ function updateQuantity(productId, size, newQuantity) {
   
   localStorage.setItem('jewsa-cart', JSON.stringify(cart));
   updateCartDisplay();
-}
+};
 
 // Checkout function
-async function checkout() {
-  const stripe = Stripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+window.checkout = async function() {
+  const stripe = getStripe();
+  if (!stripe) {
+    showNotification('Checkout temporarily unavailable');
+    return;
+  }
   
   try {
     const response = await fetch('/api/create-checkout-session', {
@@ -156,12 +177,7 @@ async function checkout() {
     console.error('Checkout error:', error);
     showNotification('Checkout failed. Please try again.');
   }
-}
-
-// Make functions available globally
-window.addToCart = addToCart;
-window.updateQuantity = updateQuantity;
-window.checkout = checkout;
+};
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {

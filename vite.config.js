@@ -13,6 +13,11 @@ export default defineConfig({
       }
     }
   },
+  define: {
+    // Ensure environment variables are properly replaced
+    'process.env.VITE_STRIPE_PUBLISHABLE_KEY': 
+      JSON.stringify(process.env.VITE_STRIPE_PUBLISHABLE_KEY)
+  },
   server: {
     port: 3000
   }
