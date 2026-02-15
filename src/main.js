@@ -16,15 +16,11 @@ const PRODUCTS = {
   }
 };
 
-// Shopping cart
-let cart = [];
+// Initialize Stripe
+const stripe = Stripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
 
-// Load Stripe
-let stripe;
-async function initStripe() {
-  stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
-}
-initStripe();
+// Shopping cart with localStorage persistence
+let cart = JSON.parse(localStorage.getItem('jewsa-cart') || '[]');
 
 // Add to cart function
 function addToCart(productType, size) {
@@ -45,8 +41,14 @@ function addToCart(productType, size) {
     });
   }
 
+  saveCart();
   updateCartDisplay();
   showCartNotification();
+}
+
+// Save cart to localStorage
+function saveCart() {
+  localStorage.setItem('jewsa-cart', JSON.stringify(cart));
 }
 
 // Update cart display
@@ -77,9 +79,9 @@ function updateCartDisplay() {
             <p>$${item.price.toFixed(2)} x ${item.quantity}</p>
           </div>
           <div class="cart-item-actions">
-            <button onclick="updateQuantity('${item.id}', '${item.size}', ${item.quantity - 1})">-</button>
+            <button onclick="window.updateQuantity('${item.id}', '${item.size}', ${item.quantity - 1})">-</button>
             <span>${item.quantity}</span>
-            <button onclick="updateQuantity('${item.id}', '${item.size}', ${item.quantity + 1})">+</button>
+            <button onclick="window.updateQuantity('${item.id}', '${item.size}', ${item.quantity + 1})">+</button>
           </div>
         </div>
       `).join('')}
@@ -88,7 +90,7 @@ function updateCartDisplay() {
           <span>Total:</span>
           <span>$${total.toFixed(2)}</span>
         </div>
-        <button onclick="checkout()" class="checkout-button">Checkout</button>
+        <button onclick="window.checkout()" class="checkout-button">Checkout</button>
       </div>
     `;
   }
@@ -104,6 +106,7 @@ window.updateQuantity = function(productId, size, newQuantity) {
       item.quantity = newQuantity;
     }
   }
+  saveCart();
   updateCartDisplay();
 };
 
@@ -120,7 +123,7 @@ function showCartNotification() {
 }
 
 // Handle checkout
-async function checkout() {
+window.checkout = async function() {
   try {
     const response = await fetch('/api/create-checkout-session', {
       method: 'POST',
@@ -144,7 +147,7 @@ async function checkout() {
     console.error('Checkout error:', error);
     alert('Checkout failed. Please try again.');
   }
-}
+};
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
