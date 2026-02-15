@@ -17,13 +17,14 @@ const PRODUCTS = {
 };
 
 // Initialize Stripe
-const stripe = Stripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+const stripe = window.Stripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 // Shopping cart with localStorage persistence
 let cart = JSON.parse(localStorage.getItem('jewsa-cart') || '[]');
 
 // Add to cart function
 function addToCart(productType, size) {
+  console.log('Adding to cart:', productType, size);
   const product = PRODUCTS[productType];
   if (!product || !size) {
     alert('Please select a size first');
@@ -41,18 +42,14 @@ function addToCart(productType, size) {
     });
   }
 
-  saveCart();
+  localStorage.setItem('jewsa-cart', JSON.stringify(cart));
   updateCartDisplay();
   showCartNotification();
 }
 
-// Save cart to localStorage
-function saveCart() {
-  localStorage.setItem('jewsa-cart', JSON.stringify(cart));
-}
-
 // Update cart display
 function updateCartDisplay() {
+  console.log('Updating cart display, cart:', cart);
   const cartCount = document.getElementById('cart-count');
   if (cartCount) {
     const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
@@ -79,9 +76,9 @@ function updateCartDisplay() {
             <p>$${item.price.toFixed(2)} x ${item.quantity}</p>
           </div>
           <div class="cart-item-actions">
-            <button onclick="window.updateQuantity('${item.id}', '${item.size}', ${item.quantity - 1})">-</button>
+            <button onclick="updateQuantity('${item.id}', '${item.size}', ${item.quantity - 1})">-</button>
             <span>${item.quantity}</span>
-            <button onclick="window.updateQuantity('${item.id}', '${item.size}', ${item.quantity + 1})">+</button>
+            <button onclick="updateQuantity('${item.id}', '${item.size}', ${item.quantity + 1})">+</button>
           </div>
         </div>
       `).join('')}
@@ -90,7 +87,7 @@ function updateCartDisplay() {
           <span>Total:</span>
           <span>$${total.toFixed(2)}</span>
         </div>
-        <button onclick="window.checkout()" class="checkout-button">Checkout</button>
+        <button onclick="checkout()" class="checkout-button">Checkout</button>
       </div>
     `;
   }
@@ -106,7 +103,7 @@ window.updateQuantity = function(productId, size, newQuantity) {
       item.quantity = newQuantity;
     }
   }
-  saveCart();
+  localStorage.setItem('jewsa-cart', JSON.stringify(cart));
   updateCartDisplay();
 };
 
@@ -151,6 +148,8 @@ window.checkout = async function() {
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
+  console.log('Initializing cart...');
+  
   // Add to cart button handlers
   document.querySelectorAll('.buy-button').forEach(button => {
     button.addEventListener('click', (e) => {
@@ -159,11 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const productType = card.dataset.product;
       const size = select.value;
 
-      if (!size) {
-        alert('Please select a size first');
-        return;
-      }
-
+      console.log('Buy button clicked:', { productType, size });
       addToCart(productType, size);
     });
   });
