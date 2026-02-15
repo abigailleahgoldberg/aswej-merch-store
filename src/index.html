@@ -10,38 +10,53 @@
     <header>
         <h1>JewSA</h1>
         <p class="tagline">Where Pride Meets Punchlines</p>
+        <div class="cart-icon">
+            🛒 <span id="cart-count">0</span>
+        </div>
     </header>
     
-    <main class="products">
-        <article class="product-card">
-            <img src="https://files.cdn.printful.com/files/b4e/b4ebbc30701e79902092467a74f74124_preview.png" alt="JewSA Basic Tee">
-            <h2>JewSA Basic Tee</h2>
-            <p class="description">Not your bubbe's basic tee! Show your stars, stripes, and chutzpah with our flagship shirt.</p>
-            <div class="variants">
-                <select id="tee-sizes" aria-label="Size">
-                    <option value="">Select Size</option>
-                    <option>S</option>
-                    <option>M</option>
-                    <option>L</option>
-                    <option>XL</option>
-                </select>
-            </div>
-            <button class="buy-button">Order Now</button>
-        </article>
+    <main>
+        <section class="products">
+            <article class="product-card" data-product="tee">
+                <img src="https://files.cdn.printful.com/files/b4e/b4ebbc30701e79902092467a74f74124_preview.png" alt="JewSA Basic Tee">
+                <h2>JewSA Basic Tee</h2>
+                <p class="price">$29.99</p>
+                <p class="description">Not your bubbe's basic tee! Show your stars, stripes, and chutzpah with our flagship shirt.</p>
+                <div class="variants">
+                    <select id="tee-sizes" aria-label="Size">
+                        <option value="">Select Size</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="L">L</option>
+                        <option value="XL">XL</option>
+                    </select>
+                </div>
+                <button class="buy-button">Add to Cart</button>
+            </article>
 
-        <article class="product-card">
-            <img src="https://files.cdn.printful.com/files/3f4/3f41dd5bee9414a4c43fcefc2a63a429_preview.png" alt="JewSA Old School Bucket Hat">
-            <h2>JewSA Old School Bucket Hat</h2>
-            <p class="description">Keep your keppah cool! The perfect blend of old school style and new school pride.</p>
-            <div class="variants">
-                <select id="hat-sizes" aria-label="Size">
-                    <option value="">Select Size</option>
-                    <option>S/M</option>
-                    <option>L/XL</option>
-                </select>
+            <article class="product-card" data-product="hat">
+                <img src="https://files.cdn.printful.com/files/3f4/3f41dd5bee9414a4c43fcefc2a63a429_preview.png" alt="JewSA Old School Bucket Hat">
+                <h2>JewSA Old School Bucket Hat</h2>
+                <p class="price">$24.99</p>
+                <p class="description">Keep your keppah cool! The perfect blend of old school style and new school pride.</p>
+                <div class="variants">
+                    <select id="hat-sizes" aria-label="Size">
+                        <option value="">Select Size</option>
+                        <option value="S/M">S/M</option>
+                        <option value="L/XL">L/XL</option>
+                    </select>
+                </div>
+                <button class="buy-button">Add to Cart</button>
+            </article>
+        </section>
+
+        <section id="cart" class="cart">
+            <h2>Shopping Cart</h2>
+            <div id="cart-items"></div>
+            <div class="cart-summary">
+                <button id="checkout-button" onclick="handleCheckout()">Checkout</button>
             </div>
-            <button class="buy-button">Order Now</button>
-        </article>
+        </section>
     </main>
 
     <footer>
