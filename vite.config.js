@@ -1,10 +1,10 @@
 export default {
   build: {
-    outDir: 'dist',
+    outDir: '../dist', // Output to project root, not src
     emptyOutDir: true
   },
   server: {
     port: 3000
   },
-  root: 'src'  // Specify the root directory where index.html is located
+  root: 'src'  // Keep src as root for index.html
 }
