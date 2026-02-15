@@ -1,5 +1,5 @@
+// Import styles
 import './style.css';
-import { initRouter } from './router';
 
 // Product data
 const PRODUCTS = {
@@ -17,24 +17,21 @@ const PRODUCTS = {
   }
 };
 
-// Initialize Stripe
-const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
-console.log('Stripe key available:', !!stripeKey);
-const stripe = window.Stripe(stripeKey);
-
-// Shopping cart with localStorage persistence
+// Cart state
 let cart = JSON.parse(localStorage.getItem('jewsa-cart') || '[]');
 
-// Add to cart function
+// Simple function to add items to cart
 function addToCart(productType, size) {
-  console.log('Adding to cart:', { productType, size });
-  const product = PRODUCTS[productType];
-  if (!product || !size) {
+  console.log('Adding to cart:', productType, size);
+  
+  if (!size) {
     alert('Please select a size first');
     return;
   }
 
+  const product = PRODUCTS[productType];
   const existingItem = cart.find(item => item.id === product.id && item.size === size);
+
   if (existingItem) {
     existingItem.quantity += 1;
   } else {
@@ -45,14 +42,21 @@ function addToCart(productType, size) {
     });
   }
 
+  // Save cart
   localStorage.setItem('jewsa-cart', JSON.stringify(cart));
+  
+  // Update display
   updateCartDisplay();
-  showCartNotification();
+  
+  // Show notification
+  showNotification('Item added to cart!');
 }
 
 // Update cart display
 function updateCartDisplay() {
-  console.log('Updating cart display:', cart);
+  console.log('Updating cart display');
+  
+  // Update cart count
   const cartCount = document.getElementById('cart-count');
   if (cartCount) {
     const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
@@ -60,6 +64,7 @@ function updateCartDisplay() {
     cartCount.style.display = totalItems > 0 ? 'inline' : 'none';
   }
 
+  // Update cart items
   const cartItems = document.getElementById('cart-items');
   if (cartItems) {
     if (cart.length === 0) {
@@ -76,12 +81,12 @@ function updateCartDisplay() {
           <div class="cart-item-details">
             <h3>${item.name}</h3>
             <p>Size: ${item.size}</p>
-            <p>$${item.price.toFixed(2)} x ${item.quantity}</p>
+            <p>$${item.price.toFixed(2)} × ${item.quantity}</p>
           </div>
           <div class="cart-item-actions">
-            <button onclick="window.updateCartQuantity('${item.id}', '${item.size}', ${item.quantity - 1})">-</button>
+            <button onclick="updateQuantity('${item.id}', '${item.size}', ${item.quantity - 1})">-</button>
             <span>${item.quantity}</span>
-            <button onclick="window.updateCartQuantity('${item.id}', '${item.size}', ${item.quantity + 1})">+</button>
+            <button onclick="updateQuantity('${item.id}', '${item.size}', ${item.quantity + 1})">+</button>
           </div>
         </div>
       `).join('')}
@@ -90,15 +95,26 @@ function updateCartDisplay() {
           <span>Total:</span>
           <span>$${total.toFixed(2)}</span>
         </div>
-        <button onclick="window.handleCheckout()" class="checkout-button">Checkout</button>
+        <button onclick="checkout()" class="checkout-button">Checkout</button>
       </div>
     `;
   }
 }
 
-// Update item quantity
-window.updateCartQuantity = function(productId, size, newQuantity) {
-  console.log('Updating quantity:', { productId, size, newQuantity });
+// Show notification
+function showNotification(message) {
+  const notification = document.createElement('div');
+  notification.className = 'cart-notification';
+  notification.textContent = message;
+  document.body.appendChild(notification);
+
+  setTimeout(() => {
+    notification.remove();
+  }, 2000);
+}
+
+// Update quantity
+function updateQuantity(productId, size, newQuantity) {
   if (newQuantity < 1) {
     cart = cart.filter(item => !(item.id === productId && item.size === size));
   } else {
@@ -107,26 +123,16 @@ window.updateCartQuantity = function(productId, size, newQuantity) {
       item.quantity = newQuantity;
     }
   }
+  
   localStorage.setItem('jewsa-cart', JSON.stringify(cart));
   updateCartDisplay();
-};
-
-// Show cart notification
-function showCartNotification() {
-  const notification = document.createElement('div');
-  notification.className = 'cart-notification';
-  notification.textContent = 'Item added to cart!';
-  document.body.appendChild(notification);
-
-  setTimeout(() => {
-    notification.remove();
-  }, 2000);
 }
 
-// Handle checkout
-window.handleCheckout = async function() {
+// Checkout function
+async function checkout() {
+  const stripe = Stripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+  
   try {
-    console.log('Starting checkout process...');
     const response = await fetch('/api/create-checkout-session', {
       method: 'POST',
       headers: {
@@ -138,7 +144,6 @@ window.handleCheckout = async function() {
     });
 
     const { sessionId } = await response.json();
-    console.log('Got session ID:', sessionId);
     
     const result = await stripe.redirectToCheckout({
       sessionId,
@@ -149,39 +154,17 @@ window.handleCheckout = async function() {
     }
   } catch (error) {
     console.error('Checkout error:', error);
-    alert('Checkout failed. Please try again.');
+    showNotification('Checkout failed. Please try again.');
   }
-};
-
-// Initialize
-function initCart() {
-  console.log('Initializing cart...');
-  
-  // Add to cart button handlers
-  document.querySelectorAll('.buy-button').forEach(button => {
-    button.addEventListener('click', (e) => {
-      const card = e.target.closest('.product-card');
-      const select = card.querySelector('select');
-      const productType = card.dataset.product;
-      const size = select.value;
-
-      console.log('Buy button clicked:', { productType, size });
-      addToCart(productType, size);
-    });
-  });
-
-  // Initialize cart display
-  updateCartDisplay();
 }
 
-// Set up global access to cart functions
+// Make functions available globally
 window.addToCart = addToCart;
-window.updateCartDisplay = updateCartDisplay;
+window.updateQuantity = updateQuantity;
+window.checkout = checkout;
 
-// Initialize everything when DOM is ready
+// Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('Page loaded, initializing...');
-  initRouter();
-  initCart();
-  console.log('Initialization complete!');
+  console.log('Page loaded, initializing cart...');
+  updateCartDisplay();
 });
