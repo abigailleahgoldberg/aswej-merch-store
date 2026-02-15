@@ -1,4 +1,5 @@
 import './style.css';
+import { initRouter } from './router';
 
 // Product data
 const PRODUCTS = {
@@ -18,7 +19,7 @@ const PRODUCTS = {
 
 // Initialize Stripe
 const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
-console.log('Initializing Stripe with key prefix:', stripeKey?.substring(0, 7));
+console.log('Stripe key available:', !!stripeKey);
 const stripe = window.Stripe(stripeKey);
 
 // Shopping cart with localStorage persistence
@@ -26,8 +27,7 @@ let cart = JSON.parse(localStorage.getItem('jewsa-cart') || '[]');
 
 // Add to cart function
 function addToCart(productType, size) {
-    console.log('Adding to cart:', { productType, size, product: PRODUCTS[productType] });
-  console.log('Adding to cart:', productType, size);
+  console.log('Adding to cart:', { productType, size });
   const product = PRODUCTS[productType];
   if (!product || !size) {
     alert('Please select a size first');
@@ -52,7 +52,7 @@ function addToCart(productType, size) {
 
 // Update cart display
 function updateCartDisplay() {
-  console.log('Updating cart display, cart:', cart);
+  console.log('Updating cart display:', cart);
   const cartCount = document.getElementById('cart-count');
   if (cartCount) {
     const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
@@ -79,9 +79,9 @@ function updateCartDisplay() {
             <p>$${item.price.toFixed(2)} x ${item.quantity}</p>
           </div>
           <div class="cart-item-actions">
-            <button onclick="updateQuantity('${item.id}', '${item.size}', ${item.quantity - 1})">-</button>
+            <button onclick="window.updateCartQuantity('${item.id}', '${item.size}', ${item.quantity - 1})">-</button>
             <span>${item.quantity}</span>
-            <button onclick="updateQuantity('${item.id}', '${item.size}', ${item.quantity + 1})">+</button>
+            <button onclick="window.updateCartQuantity('${item.id}', '${item.size}', ${item.quantity + 1})">+</button>
           </div>
         </div>
       `).join('')}
@@ -90,14 +90,15 @@ function updateCartDisplay() {
           <span>Total:</span>
           <span>$${total.toFixed(2)}</span>
         </div>
-        <button onclick="checkout()" class="checkout-button">Checkout</button>
+        <button onclick="window.handleCheckout()" class="checkout-button">Checkout</button>
       </div>
     `;
   }
 }
 
 // Update item quantity
-window.updateQuantity = function(productId, size, newQuantity) {
+window.updateCartQuantity = function(productId, size, newQuantity) {
+  console.log('Updating quantity:', { productId, size, newQuantity });
   if (newQuantity < 1) {
     cart = cart.filter(item => !(item.id === productId && item.size === size));
   } else {
@@ -123,8 +124,9 @@ function showCartNotification() {
 }
 
 // Handle checkout
-window.checkout = async function() {
+window.handleCheckout = async function() {
   try {
+    console.log('Starting checkout process...');
     const response = await fetch('/api/create-checkout-session', {
       method: 'POST',
       headers: {
@@ -136,6 +138,8 @@ window.checkout = async function() {
     });
 
     const { sessionId } = await response.json();
+    console.log('Got session ID:', sessionId);
+    
     const result = await stripe.redirectToCheckout({
       sessionId,
     });
@@ -149,16 +153,8 @@ window.checkout = async function() {
   }
 };
 
-// Import router
-import { initRouter } from './router';
-
 // Initialize
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('Page loaded, initializing...');
-    // Initialize router
-    initRouter();
-    
-    console.log('Setting up cart handlers...');
+function initCart() {
   console.log('Initializing cart...');
   
   // Add to cart button handlers
@@ -176,4 +172,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initialize cart display
   updateCartDisplay();
+}
+
+// Set up global access to cart functions
+window.addToCart = addToCart;
+window.updateCartDisplay = updateCartDisplay;
+
+// Initialize everything when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('Page loaded, initializing...');
+  initRouter();
+  initCart();
+  console.log('Initialization complete!');
 });
