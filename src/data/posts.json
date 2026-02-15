@@ -1,0 +1,26 @@
+{
+  "posts": [
+    {
+      "id": "1",
+      "title": "Welcome to JewSA Blog!",
+      "slug": "welcome-to-jewsa",
+      "excerpt": "Shalom and welcome to our corner of the internet where Jewish humor meets style!",
+      "content": "We're excited to launch this space where we'll share stories, insights, and plenty of laughs about Jewish life, culture, and of course, our unique take on fashion. From 'Oy vey' to 'Mazel tov,' we're here to celebrate our heritage with style and humor.\n\nStay tuned for:\n- Fashion tips with a Jewish twist\n- Holiday style guides\n- Community stories\n- Cultural commentary\n- And plenty of schmoozing!",
+      "author": "The JewSA Team",
+      "date": "2026-02-15",
+      "category": "announcements",
+      "tags": ["welcome", "community", "fashion"]
+    },
+    {
+      "id": "2",
+      "title": "The Great Kippah Debate: To Clip or Not to Clip?",
+      "slug": "kippah-clip-debate",
+      "excerpt": "An age-old discussion: what's the best way to keep your kippah from doing aerial acrobatics?",
+      "content": "Every Jewish person who's ever worn a kippah knows the struggle: you're walking down the street, minding your own business, when suddenly a gust of wind turns your kippah into an impromptu frisbee.\n\nLet's break down the pros and cons of different kippah-securing methods:\n\n1. The Classic Clip\n- Pros: Reliable, easy to use\n- Cons: Can snag hair, visible\n\n2. The Bobby Pin Technique\n- Pros: Discrete, secure\n- Cons: Can be fiddly, easy to lose\n\n3. The Velvet Grip\n- Pros: No clips needed, comfortable\n- Cons: Not as secure, limited to velvet kippot\n\n4. The Double Clip Strategy\n- Pros: Maximum security\n- Cons: Overkill? Maybe. But hey, better safe than sorry!\n\nShare your preferred method in the comments below!",
+      "author": "Rabbi Ben Windycity",
+      "date": "2026-02-16",
+      "category": "humor",
+      "tags": ["kippah", "jewish-life", "humor"]
+    }
+  ]
+}
