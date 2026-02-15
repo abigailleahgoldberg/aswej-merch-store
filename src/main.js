@@ -3,7 +3,7 @@ import './style.css';
 
 // Product IDs
 const PRODUCTS = {
-    tee: '419414079',
+    tee: '419473357',
     hat: '419417492'
 };
 
