@@ -5,13 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JewSA - Proud, Punny, Perfect</title>
     <script src="https://js.stripe.com/v3/"></script>
-    <script type="module" src="/src/main.js"></script>
     <link rel="stylesheet" href="/src/style.css">
 </head>
 <body>
     <header>
         <nav class="main-nav">
-            <a href="/blog">Blog</a>
+            <a href="/">Shop</a>
             <h1>JewSA</h1>
             <a href="/cart" class="cart-icon">
                 🛒 <span id="cart-count">0</span>
@@ -22,13 +21,13 @@
     
     <main>
         <section class="products">
-            <article class="product-card">
+            <article class="product-card" data-product="tee">
                 <img src="https://files.cdn.printful.com/files/b4e/b4ebbc30701e79902092467a74f74124_preview.png" alt="JewSA Basic Tee">
                 <h2>JewSA Basic Tee</h2>
                 <p class="price">$29.99</p>
                 <p class="description">Not your bubbe's basic tee! Show your stars, stripes, and chutzpah with our flagship shirt.</p>
                 <div class="variants">
-                    <select id="tee-size">
+                    <select id="tee-size" aria-label="Size">
                         <option value="">Select Size</option>
                         <option value="S">S</option>
                         <option value="M">M</option>
@@ -36,22 +35,22 @@
                         <option value="XL">XL</option>
                     </select>
                 </div>
-                <button onclick="addToCart('tee', document.getElementById('tee-size').value)">Add to Cart</button>
+                <button class="buy-button">Add to Cart</button>
             </article>
 
-            <article class="product-card">
+            <article class="product-card" data-product="hat">
                 <img src="https://files.cdn.printful.com/files/3f4/3f41dd5bee9414a4c43fcefc2a63a429_preview.png" alt="JewSA Old School Bucket Hat">
                 <h2>JewSA Old School Bucket Hat</h2>
                 <p class="price">$24.99</p>
                 <p class="description">Keep your keppah cool! The perfect blend of old school style and new school pride.</p>
                 <div class="variants">
-                    <select id="hat-size">
+                    <select id="hat-size" aria-label="Size">
                         <option value="">Select Size</option>
                         <option value="S/M">S/M</option>
                         <option value="L/XL">L/XL</option>
                     </select>
                 </div>
-                <button onclick="addToCart('hat', document.getElementById('hat-size').value)">Add to Cart</button>
+                <button class="buy-button">Add to Cart</button>
             </article>
         </section>
 
@@ -64,5 +63,7 @@
     <footer>
         <p>© 2026 JewSA - Proudly printed on demand</p>
     </footer>
+
+    <script type="module" src="/src/main.js"></script>
 </body>
 </html>

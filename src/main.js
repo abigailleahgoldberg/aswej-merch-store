@@ -1,11 +1,4 @@
-// Import styles
 import './style.css';
-
-// Debug environment variables
-console.log('Environment check:', {
-  hasStripeKey: !!import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY,
-  keyPrefix: import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY?.substring(0, 7)
-});
 
 // Product data
 const PRODUCTS = {
@@ -23,26 +16,12 @@ const PRODUCTS = {
   }
 };
 
-// Initialize Stripe only when needed
-let stripeInstance = null;
-function getStripe() {
-  if (!stripeInstance) {
-    const key = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
-    if (!key) {
-      console.error('Stripe key not found in environment');
-      return null;
-    }
-    stripeInstance = window.Stripe(key);
-  }
-  return stripeInstance;
-}
-
-// Cart state
+// Shopping cart
 let cart = JSON.parse(localStorage.getItem('jewsa-cart') || '[]');
 
 // Add to cart function
-window.addToCart = function(productType, size) {
-  console.log('Adding to cart:', { productType, size });
+function addToCart(productType, size) {
+  console.log('Adding to cart:', productType, size);
   
   if (!size) {
     alert('Please select a size first');
@@ -64,14 +43,11 @@ window.addToCart = function(productType, size) {
 
   localStorage.setItem('jewsa-cart', JSON.stringify(cart));
   updateCartDisplay();
-  showNotification('Item added to cart!');
-};
+  showCartNotification('Item added to cart!');
+}
 
 // Update cart display
 function updateCartDisplay() {
-  console.log('Updating cart:', cart);
-  
-  // Update cart count
   const cartCount = document.getElementById('cart-count');
   if (cartCount) {
     const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
@@ -79,7 +55,6 @@ function updateCartDisplay() {
     cartCount.style.display = totalItems > 0 ? 'inline' : 'none';
   }
 
-  // Update cart items
   const cartItems = document.getElementById('cart-items');
   if (cartItems) {
     if (cart.length === 0) {
@@ -99,9 +74,9 @@ function updateCartDisplay() {
             <p>$${item.price.toFixed(2)} × ${item.quantity}</p>
           </div>
           <div class="cart-item-actions">
-            <button onclick="window.updateQuantity('${item.id}', '${item.size}', ${item.quantity - 1})">-</button>
+            <button onclick="updateQuantity('${item.id}', '${item.size}', ${item.quantity - 1})">-</button>
             <span>${item.quantity}</span>
-            <button onclick="window.updateQuantity('${item.id}', '${item.size}', ${item.quantity + 1})">+</button>
+            <button onclick="updateQuantity('${item.id}', '${item.size}', ${item.quantity + 1})">+</button>
           </div>
         </div>
       `).join('')}
@@ -110,14 +85,14 @@ function updateCartDisplay() {
           <span>Total:</span>
           <span>$${total.toFixed(2)}</span>
         </div>
-        <button onclick="window.checkout()" class="checkout-button">Checkout</button>
+        <button onclick="checkout()" class="checkout-button">Checkout</button>
       </div>
     `;
   }
 }
 
 // Show notification
-function showNotification(message) {
+function showCartNotification(message) {
   const notification = document.createElement('div');
   notification.className = 'cart-notification';
   notification.textContent = message;
@@ -130,8 +105,6 @@ function showNotification(message) {
 
 // Update quantity
 window.updateQuantity = function(productId, size, newQuantity) {
-  console.log('Updating quantity:', { productId, size, newQuantity });
-  
   if (newQuantity < 1) {
     cart = cart.filter(item => !(item.id === productId && item.size === size));
   } else {
@@ -145,42 +118,20 @@ window.updateQuantity = function(productId, size, newQuantity) {
   updateCartDisplay();
 };
 
-// Checkout function
-window.checkout = async function() {
-  const stripe = getStripe();
-  if (!stripe) {
-    showNotification('Checkout temporarily unavailable');
-    return;
-  }
-  
-  try {
-    const response = await fetch('/api/create-checkout-session', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        items: cart,
-      }),
-    });
-
-    const { sessionId } = await response.json();
-    
-    const result = await stripe.redirectToCheckout({
-      sessionId,
-    });
-
-    if (result.error) {
-      throw new Error(result.error.message);
-    }
-  } catch (error) {
-    console.error('Checkout error:', error);
-    showNotification('Checkout failed. Please try again.');
-  }
-};
-
-// Initialize on page load
+// Initialize cart handlers
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('Page loaded, initializing cart...');
+  // Add to cart button handlers
+  document.querySelectorAll('.buy-button').forEach(button => {
+    button.addEventListener('click', (e) => {
+      const card = e.target.closest('.product-card');
+      const productType = card.dataset.product;
+      const select = card.querySelector('select');
+      const size = select.value;
+
+      addToCart(productType, size);
+    });
+  });
+
+  // Initialize cart display
   updateCartDisplay();
 });
