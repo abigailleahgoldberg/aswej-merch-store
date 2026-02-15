@@ -17,13 +17,16 @@ const PRODUCTS = {
 };
 
 // Initialize Stripe
-const stripe = window.Stripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+console.log('Initializing Stripe with key prefix:', stripeKey?.substring(0, 7));
+const stripe = window.Stripe(stripeKey);
 
 // Shopping cart with localStorage persistence
 let cart = JSON.parse(localStorage.getItem('jewsa-cart') || '[]');
 
 // Add to cart function
 function addToCart(productType, size) {
+    console.log('Adding to cart:', { productType, size, product: PRODUCTS[productType] });
   console.log('Adding to cart:', productType, size);
   const product = PRODUCTS[productType];
   if (!product || !size) {
@@ -151,8 +154,11 @@ import { initRouter } from './router';
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('Page loaded, initializing...');
     // Initialize router
     initRouter();
+    
+    console.log('Setting up cart handlers...');
   console.log('Initializing cart...');
   
   // Add to cart button handlers
