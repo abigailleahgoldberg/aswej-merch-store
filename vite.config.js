@@ -1,7 +1,7 @@
 export default {
   build: {
     outDir: 'dist',
-    emptyOutDir: true,
+    emptyOutDir: true
   },
   server: {
     port: 3000
