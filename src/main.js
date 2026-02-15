@@ -1,7 +1,6 @@
 import './style.css';
-import { loadStripe } from '@stripe/stripe-js';
 
-// Product IDs
+// Product data
 const PRODUCTS = {
   tee: {
     id: '419473357',
@@ -17,16 +16,17 @@ const PRODUCTS = {
   }
 };
 
-// Initialize Stripe
+// Shopping cart
+let cart = [];
+
+// Load Stripe
 let stripe;
 async function initStripe() {
   stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
 }
 initStripe();
 
-// Shopping Cart
-let cart = [];
-
+// Add to cart function
 function addToCart(productType, size) {
   const product = PRODUCTS[productType];
   if (!product || !size) {
@@ -34,63 +34,102 @@ function addToCart(productType, size) {
     return;
   }
 
-  cart.push({
-    ...product,
-    size,
-    quantity: 1
-  });
+  const existingItem = cart.find(item => item.id === product.id && item.size === size);
+  if (existingItem) {
+    existingItem.quantity += 1;
+  } else {
+    cart.push({
+      ...product,
+      size,
+      quantity: 1
+    });
+  }
 
   updateCartDisplay();
+  showCartNotification();
 }
 
+// Update cart display
 function updateCartDisplay() {
   const cartCount = document.getElementById('cart-count');
   if (cartCount) {
-    cartCount.textContent = cart.length;
+    const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
+    cartCount.textContent = totalItems;
+    cartCount.style.display = totalItems > 0 ? 'inline' : 'none';
   }
 
   const cartItems = document.getElementById('cart-items');
   if (cartItems) {
-    cartItems.innerHTML = cart.map(item => `
-      <div class="cart-item">
-        <img src="${item.image}" alt="${item.name}" width="50">
-        <div>
-          <h3>${item.name}</h3>
-          <p>Size: ${item.size}</p>
-          <p>$${item.price.toFixed(2)}</p>
-        </div>
-        <button onclick="removeFromCart('${item.id}')">Remove</button>
-      </div>
-    `).join('');
-  }
-}
-
-// Handle buy button clicks
-document.querySelectorAll('.buy-button').forEach(button => {
-  button.addEventListener('click', async (event) => {
-    const card = event.target.closest('.product-card');
-    const select = card.querySelector('select');
-    const size = select.value;
-    const productType = card.dataset.product;
-
-    if (!size) {
-      alert('Please select a size first');
+    if (cart.length === 0) {
+      cartItems.innerHTML = '<p class="empty-cart">Your cart is empty</p>';
       return;
     }
 
-    addToCart(productType, size);
-  });
-});
+    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    
+    cartItems.innerHTML = `
+      ${cart.map(item => `
+        <div class="cart-item">
+          <img src="${item.image}" alt="${item.name}">
+          <div class="cart-item-details">
+            <h3>${item.name}</h3>
+            <p>Size: ${item.size}</p>
+            <p>$${item.price.toFixed(2)} x ${item.quantity}</p>
+          </div>
+          <div class="cart-item-actions">
+            <button onclick="updateQuantity('${item.id}', '${item.size}', ${item.quantity - 1})">-</button>
+            <span>${item.quantity}</span>
+            <button onclick="updateQuantity('${item.id}', '${item.size}', ${item.quantity + 1})">+</button>
+          </div>
+        </div>
+      `).join('')}
+      <div class="cart-summary">
+        <div class="cart-total">
+          <span>Total:</span>
+          <span>$${total.toFixed(2)}</span>
+        </div>
+        <button onclick="checkout()" class="checkout-button">Checkout</button>
+      </div>
+    `;
+  }
+}
 
-// Checkout handler
-async function handleCheckout() {
+// Update item quantity
+window.updateQuantity = function(productId, size, newQuantity) {
+  if (newQuantity < 1) {
+    cart = cart.filter(item => !(item.id === productId && item.size === size));
+  } else {
+    const item = cart.find(item => item.id === productId && item.size === size);
+    if (item) {
+      item.quantity = newQuantity;
+    }
+  }
+  updateCartDisplay();
+};
+
+// Show cart notification
+function showCartNotification() {
+  const notification = document.createElement('div');
+  notification.className = 'cart-notification';
+  notification.textContent = 'Item added to cart!';
+  document.body.appendChild(notification);
+
+  setTimeout(() => {
+    notification.remove();
+  }, 2000);
+}
+
+// Handle checkout
+async function checkout() {
   try {
-    const response = await fetch('/api/create-checkout', {
+    const response = await fetch('/api/create-checkout-session', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ items: cart }),
+      body: JSON.stringify({
+        items: cart,
+      }),
     });
 
     const { sessionId } = await response.json();
@@ -99,7 +138,7 @@ async function handleCheckout() {
     });
 
     if (result.error) {
-      alert(result.error.message);
+      throw new Error(result.error.message);
     }
   } catch (error) {
     console.error('Checkout error:', error);
@@ -107,7 +146,25 @@ async function handleCheckout() {
   }
 }
 
-// Initialize cart display
+// Initialize
 document.addEventListener('DOMContentLoaded', () => {
+  // Add to cart button handlers
+  document.querySelectorAll('.buy-button').forEach(button => {
+    button.addEventListener('click', (e) => {
+      const card = e.target.closest('.product-card');
+      const select = card.querySelector('select');
+      const productType = card.dataset.product;
+      const size = select.value;
+
+      if (!size) {
+        alert('Please select a size first');
+        return;
+      }
+
+      addToCart(productType, size);
+    });
+  });
+
+  // Initialize cart display
   updateCartDisplay();
 });
