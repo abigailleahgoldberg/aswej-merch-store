@@ -1,16 +1,19 @@
-import { resolve } from 'path';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
   build: {
+    outDir: 'dist',
     rollupOptions: {
       input: {
-        main: resolve(__dirname, 'index.html'),
-        cart: resolve(__dirname, 'cart.html'),
-        blog: resolve(__dirname, 'blog.html'),
-        admin: resolve(__dirname, 'admin.html'),
-        success: resolve(__dirname, 'success.html')
+        main: '/index.html',
+        blog: '/src/blog.html',
+        cart: '/src/cart.html',
+        admin: '/src/admin.html',
+        success: '/src/success.html'
       }
     }
+  },
+  server: {
+    port: 3000
   }
 });

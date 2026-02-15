@@ -146,8 +146,13 @@ window.checkout = async function() {
   }
 };
 
+// Import router
+import { initRouter } from './router';
+
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize router
+    initRouter();
   console.log('Initializing cart...');
   
   // Add to cart button handlers
