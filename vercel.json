@@ -1,20 +1,15 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "framework": "vite",
-  "routes": [
-    { "handle": "filesystem" },
-    { "src": "/blog", "dest": "/src/blog.html" },
-    { "src": "/cart", "dest": "/src/cart.html" },
-    { "src": "/admin", "dest": "/src/admin.html" },
-    { "src": "/success", "dest": "/src/success.html" },
-    { "src": "/(.*)", "dest": "/index.html" }
-  ],
+  "version": 2,
+  "public": true,
+  "cleanUrls": true,
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "no-store" }
+        {
+          "key": "Cache-Control",
+          "value": "no-store, no-cache, must-revalidate"
+        }
       ]
     }
   ]
