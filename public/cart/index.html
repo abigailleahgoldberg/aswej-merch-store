@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shopping Cart - JewSA</title>
+    <script src="https://js.stripe.com/v3/"></script>
     <style>
         :root {
             --primary: #003E7E;
@@ -320,7 +321,39 @@
             updateCartDisplay();
         }
 
-        // Initialize
+        // Initialize Stripe
+        const stripe = Stripe(process.env.VITE_STRIPE_PUBLISHABLE_KEY);
+
+        // Checkout function
+        async function checkout() {
+            try {
+                const response = await fetch('/api/create-checkout-session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        items: cart
+                    }),
+                });
+
+                const { sessionId } = await response.json();
+                
+                // Redirect to Stripe Checkout
+                const result = await stripe.redirectToCheckout({
+                    sessionId: sessionId
+                });
+
+                if (result.error) {
+                    alert(result.error.message);
+                }
+            } catch (error) {
+                console.error('Checkout error:', error);
+                alert('Checkout failed. Please try again.');
+            }
+        }
+
+        // Initialize cart display
         updateCartDisplay();
     </script>
 </body>
