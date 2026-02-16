@@ -320,6 +320,7 @@ footer {
 }
 
 /* Responsive Design */
+/* Mobile Optimizations */
 @media (max-width: 768px) {
     .cart-items .cart-item {
         grid-template-columns: 80px 1fr;
