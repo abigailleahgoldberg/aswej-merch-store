@@ -7,6 +7,42 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="stylesheet" href="/src/style.css">
     <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        .checkout-button {
+            display: inline-block;
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            text-align: center;
+            margin-bottom: 1rem;
+            text-decoration: none;
+        }
+
+        .continue-shopping {
+            display: inline-block;
+            width: 100%;
+            padding: 1rem;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+            color: var(--primary);
+            text-decoration: none;
+            border: 2px solid var(--primary);
+            background: white;
+            margin-top: 1rem;
+        }
+
+        .checkout-button:hover,
+        .continue-shopping:hover {
+            opacity: 0.9;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -57,7 +93,7 @@
                 cartItems.innerHTML = `
                     <div class="empty-cart">
                         <p>Your cart is empty</p>
-                        <a href="/" class="button">Continue Shopping</a>
+                        <a href="/" class="continue-shopping">Continue Shopping</a>
                     </div>
                 `;
                 return;
@@ -72,7 +108,7 @@
                     ? `${item.name} - ${item.color}`
                     : item.name;
                 
-                // Use the correct image URL for hats
+                // Use correct image URL for preview
                 const imageUrl = item.id === '419417492' && item.color 
                     ? PRODUCTS.hat.images[item.color]
                     : item.image;
