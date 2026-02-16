@@ -88,8 +88,8 @@
                 price: 25.00,
                 images: {
                     'Black': 'https://files.cdn.printful.com/files/3f4/3f41dd5bee9414a4c43fcefc2a63a429_preview.png',
-                    'Navy': 'https://files.cdn.printful.com/files/6ed/6edc00e83b32af3835ce5f9c06e396ba_preview.png',
-                    'Khaki': 'https://files.cdn.printful.com/files/a6b/a6b57c9670b8503fa4823481c885e297_preview.png'
+                    'Navy': 'https://files.cdn.printful.com/files/59e/59e46eaba2b913d7789f1b0f72500cd2_preview.png',
+                    'Khaki': 'https://files.cdn.printful.com/files/efc/efc7977128f7f9be38906e06c457cfdc_preview.png'
                 },
                 image: 'https://files.cdn.printful.com/files/3f4/3f41dd5bee9414a4c43fcefc2a63a429_preview.png'
             }
@@ -97,6 +97,7 @@
 
         // Update hat image based on color selection
         function updateHatImage(color) {
+            console.log('Updating hat color:', color);
             const hatImage = document.getElementById('hat-image');
             if (color && PRODUCTS.hat.images[color]) {
                 hatImage.classList.add('fade');
