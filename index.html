@@ -6,7 +6,16 @@
     <title>JewSA - Proud, Punny, Perfect</title>
     <link rel="icon" href="/favicon.ico">
     <script src="https://js.stripe.com/v3/"></script>
-    <link rel="stylesheet" href="/src/style.css">
+    <style>
+        /* Add any custom styles here */
+        .product-image {
+            transition: opacity 0.3s ease;
+        }
+        
+        .product-image.fade {
+            opacity: 0;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -43,12 +52,12 @@
             </article>
 
             <article class="product-card" data-product="hat">
-                <img src="https://files.cdn.printful.com/files/3f4/3f41dd5bee9414a4c43fcefc2a63a429_preview.png" alt="JewSA Old School Bucket Hat">
+                <img id="hat-image" src="https://files.cdn.printful.com/files/3f4/3f41dd5bee9414a4c43fcefc2a63a429_preview.png" alt="JewSA Old School Bucket Hat" class="product-image">
                 <h2>JewSA Old School Bucket Hat</h2>
                 <p class="price">$25.00</p>
                 <p class="description">Keep your keppah cool! The perfect blend of old school style and new school pride.</p>
                 <div class="variants">
-                    <select id="hat-color" aria-label="Color">
+                    <select id="hat-color" aria-label="Color" onchange="updateHatImage(this.value)">
                         <option value="">Select Color</option>
                         <option value="Black">Black</option>
                         <option value="Navy">Navy</option>
@@ -79,7 +88,7 @@
         const CART_STORAGE_KEY = 'jewsa-cart';
         let cart = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || '[]');
 
-        // Product data
+        // Product data with color variants
         const PRODUCTS = {
             tee: {
                 id: '419473357',
@@ -91,9 +100,26 @@
                 id: '419417492',
                 name: 'JewSA Old School Bucket Hat',
                 price: 25.00,
+                images: {
+                    'Black': 'https://files.cdn.printful.com/files/3f4/3f41dd5bee9414a4c43fcefc2a63a429_preview.png',
+                    'Navy': 'https://files.cdn.printful.com/files/402/402d489e25815ef5f1d8ae16e871332c_preview.png',
+                    'Khaki': 'https://files.cdn.printful.com/files/142/142a17936edec562e9921de343a447de_preview.png'
+                },
                 image: 'https://files.cdn.printful.com/files/3f4/3f41dd5bee9414a4c43fcefc2a63a429_preview.png'
             }
         };
+
+        // Update hat image based on color selection
+        function updateHatImage(color) {
+            const hatImage = document.getElementById('hat-image');
+            if (color && PRODUCTS.hat.images[color]) {
+                hatImage.classList.add('fade');
+                setTimeout(() => {
+                    hatImage.src = PRODUCTS.hat.images[color];
+                    hatImage.classList.remove('fade');
+                }, 150);
+            }
+        }
 
         function addToCart(productType) {
             console.log('Adding to cart:', productType);
@@ -127,6 +153,7 @@
                     ...product,
                     size,
                     color: productType === 'hat' ? color : undefined,
+                    image: productType === 'hat' ? PRODUCTS.hat.images[color] : product.image,
                     variantKey,
                     quantity: 1
                 });
