@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JewSA - Proud, Punny, Perfect</title>
-    <link rel="icon" href="/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="stylesheet" href="/src/style.css">
     <script src="https://js.stripe.com/v3/"></script>
 </head>
@@ -63,6 +63,11 @@
                 <button class="buy-button">Add to Cart</button>
             </article>
         </section>
+
+        <section id="cart-preview">
+            <h2>Shopping Cart</h2>
+            <div id="cart-items"></div>
+        </section>
     </main>
 
     <footer>
@@ -86,6 +91,7 @@
                 id: '419417492',
                 name: 'JewSA Old School Bucket Hat',
                 price: 25.00,
+                basePreviewId: '3f41dd5bee9414a4c43fcefc2a63a429',
                 images: {
                     'Black': 'https://files.cdn.printful.com/files/3f4/3f41dd5bee9414a4c43fcefc2a63a429_preview.png',
                     'Navy': 'https://files.cdn.printful.com/files/8a3/8a362e027e2316269fae69016d26b433_preview.png',
@@ -110,6 +116,7 @@
                     setTimeout(() => {
                         hatImage.src = newImageUrl;
                         hatImage.classList.remove('fade');
+                        console.log('Image updated successfully');
                     }, 150);
                 };
                 tempImg.onerror = function() {
@@ -165,6 +172,65 @@
         function updateCartDisplay() {
             const count = cart.reduce((sum, item) => sum + item.quantity, 0);
             document.getElementById('cart-count').textContent = count;
+            
+            // Update cart preview
+            const cartItems = document.getElementById('cart-items');
+            if (!cart.length) {
+                cartItems.innerHTML = '<p class="empty-cart">Your cart is empty</p>';
+                return;
+            }
+
+            let html = '';
+            let total = 0;
+
+            cart.forEach(item => {
+                total += item.price * item.quantity;
+                const itemName = item.color 
+                    ? `${item.name} - ${item.color}`
+                    : item.name;
+                html += `
+                    <div class="cart-item">
+                        <img src="${item.image}" alt="${itemName}">
+                        <div class="item-details">
+                            <h3>${itemName}</h3>
+                            <p>Size: ${item.size}</p>
+                            <p class="item-price">$${(item.price * item.quantity).toFixed(2)}</p>
+                        </div>
+                        <div class="item-actions">
+                            <button onclick="updateQuantity('${item.id}', '${item.variantKey}', ${item.quantity - 1})">−</button>
+                            <span>${item.quantity}</span>
+                            <button onclick="updateQuantity('${item.id}', '${item.variantKey}', ${item.quantity + 1})">+</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `
+                <div class="cart-summary">
+                    <div class="cart-total">
+                        <span>Total: $${total.toFixed(2)}</span>
+                    </div>
+                    <a href="/cart" class="button">View Cart</a>
+                </div>
+            `;
+
+            cartItems.innerHTML = html;
+        }
+
+        function updateQuantity(productId, variantKey, newQuantity) {
+            console.log('Updating quantity:', { productId, variantKey, newQuantity });
+            
+            if (newQuantity < 1) {
+                cart = cart.filter(item => !(item.id === productId && item.variantKey === variantKey));
+            } else {
+                const item = cart.find(item => item.id === productId && item.variantKey === variantKey);
+                if (item) {
+                    item.quantity = newQuantity;
+                }
+            }
+            
+            localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+            updateCartDisplay();
         }
 
         function showCartNotification(message) {
