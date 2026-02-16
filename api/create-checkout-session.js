@@ -1,17 +1,33 @@
-import Stripe from 'stripe';
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
+    // Set CORS headers
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+    // Handle OPTIONS request
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+
+    // Only allow POST
     if (req.method !== 'POST') {
-        return res.status(405).json({ message: 'Method not allowed' });
+        return res.status(405).json({ error: 'Method not allowed' });
     }
 
     try {
-        // Initialize Stripe with the secret key
-        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-        const { items } = req.body;
+        // Verify Stripe key exists
+        if (!process.env.STRIPE_SECRET_KEY) {
+            console.error('Missing STRIPE_SECRET_KEY');
+            return res.status(500).json({ error: 'Server configuration error' });
+        }
 
+        // Parse items from request body
+        const { items } = req.body;
+        
         if (!items?.length) {
-            return res.status(400).json({ message: 'No items in cart' });
+            return res.status(400).json({ error: 'No items in cart' });
         }
 
         console.log('Creating checkout session for items:', items);
@@ -48,15 +64,16 @@ export default async function handler(req, res) {
             }
         });
 
-        // Return the session ID
-        res.status(200).json({ sessionId: session.id });
+        // Return successful response
+        return res.status(200).json({ sessionId: session.id });
     } catch (error) {
-        console.error('Stripe error:', error);
-        
-        // Send proper error response
-        res.status(500).json({ 
-            message: 'Checkout session creation failed', 
-            error: error.message 
+        // Log the full error for debugging
+        console.error('Stripe checkout error:', error);
+
+        // Return error response
+        return res.status(500).json({
+            error: 'Checkout session creation failed',
+            message: error.message
         });
     }
-}
+};

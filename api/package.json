@@ -1,0 +1,7 @@
+{
+  "name": "jewsa-merch-api",
+  "version": "1.0.0",
+  "dependencies": {
+    "stripe": "^14.16.0"
+  }
+}

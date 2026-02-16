@@ -368,6 +368,14 @@
         }
 
         async function checkout() {
+            console.log('Starting checkout process...');
+            
+            try {
+                // First, verify we have items
+                if (!cart.length) {
+                    alert('Your cart is empty');
+                    return;
+                }
             try {
                 console.log('Starting checkout process...');
                 
