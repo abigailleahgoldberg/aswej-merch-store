@@ -41,6 +41,7 @@ module.exports = async (req, res) => {
                     images: [item.image],
                     metadata: {
                         size: item.size,
+                        color: item.color,
                         productId: item.id
                     }
                 },
@@ -60,7 +61,8 @@ module.exports = async (req, res) => {
                 allowed_countries: ['US', 'CA'],
             },
             metadata: {
-                orderId: Date.now().toString()
+                orderId: Date.now().toString(),
+                items: JSON.stringify(items)  // Store cart items in metadata
             }
         });
 
