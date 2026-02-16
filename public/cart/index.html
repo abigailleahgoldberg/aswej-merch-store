@@ -296,7 +296,7 @@
                     <div class="cart-item">
                         <img src="${item.image}" alt="${item.name}">
                         <div class="item-details">
-                            <h3>${item.name}</h3>
+                            <h3>${item.color ? `${item.name} - ${item.color}` : item.name}</h3>
                             <p>Size: ${item.size}</p>
                             <p class="item-price">$${(item.price * item.quantity).toFixed(2)}</p>
                             <div class="item-actions">
