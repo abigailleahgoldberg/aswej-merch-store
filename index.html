@@ -187,9 +187,15 @@
                 const itemName = item.color 
                     ? `${item.name} - ${item.color}`
                     : item.name;
+
+                // Use correct image URL for preview
+                const imageUrl = item.id === '419417492' && item.color 
+                    ? PRODUCTS.hat.images[item.color]
+                    : item.image;
+
                 html += `
                     <div class="cart-item">
-                        <img src="${item.image}" alt="${itemName}">
+                        <img src="${imageUrl}" alt="${itemName}">
                         <div class="item-details">
                             <h3>${itemName}</h3>
                             <p>Size: ${item.size}</p>
