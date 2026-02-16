@@ -88,8 +88,8 @@
                 price: 25.00,
                 images: {
                     'Black': 'https://files.cdn.printful.com/files/3f4/3f41dd5bee9414a4c43fcefc2a63a429_preview.png',
-                    'Navy': 'https://files.cdn.printful.com/files/59e/59e46eaba2b913d7789f1b0f72500cd2_preview.png',
-                    'Khaki': 'https://files.cdn.printful.com/files/efc/efc7977128f7f9be38906e06c457cfdc_preview.png'
+                    'Navy': 'https://files.cdn.printful.com/print-files/3aa/3aa1f1c2607c0b8b5897141629386898_preview.png',
+                    'Khaki': 'https://files.cdn.printful.com/print-files/f3b/f3b6ea0d33ff98521905cbedbb3ee258_preview.png'
                 },
                 image: 'https://files.cdn.printful.com/files/3f4/3f41dd5bee9414a4c43fcefc2a63a429_preview.png'
             }
@@ -100,11 +100,22 @@
             console.log('Updating hat color:', color);
             const hatImage = document.getElementById('hat-image');
             if (color && PRODUCTS.hat.images[color]) {
-                hatImage.classList.add('fade');
-                setTimeout(() => {
-                    hatImage.src = PRODUCTS.hat.images[color];
-                    hatImage.classList.remove('fade');
-                }, 150);
+                const newImageUrl = PRODUCTS.hat.images[color];
+                console.log('New image URL:', newImageUrl);
+                
+                // Preload the image
+                const tempImg = new Image();
+                tempImg.onload = function() {
+                    hatImage.classList.add('fade');
+                    setTimeout(() => {
+                        hatImage.src = newImageUrl;
+                        hatImage.classList.remove('fade');
+                    }, 150);
+                };
+                tempImg.onerror = function() {
+                    console.error('Failed to load image:', newImageUrl);
+                };
+                tempImg.src = newImageUrl;
             }
         }
 
