@@ -14,6 +14,8 @@ export default async function handler(req, res) {
             return res.status(400).json({ message: 'No items in cart' });
         }
 
+        console.log('Creating checkout session for items:', items);
+
         // Create line items for Stripe
         const lineItems = items.map(item => ({
             price_data: {
@@ -26,7 +28,7 @@ export default async function handler(req, res) {
                         productId: item.id
                     }
                 },
-                unit_amount: Math.round(item.price * 100), // Stripe uses cents
+                unit_amount: Math.round(item.price * 100), // Convert to cents
             },
             quantity: item.quantity,
         }));
@@ -50,8 +52,10 @@ export default async function handler(req, res) {
         res.status(200).json({ sessionId: session.id });
     } catch (error) {
         console.error('Stripe error:', error);
+        
+        // Send proper error response
         res.status(500).json({ 
-            message: 'Checkout session creation failed',
+            message: 'Checkout session creation failed', 
             error: error.message 
         });
     }
