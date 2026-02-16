@@ -6,8 +6,13 @@ export default async function handler(req, res) {
     }
 
     try {
+        // Initialize Stripe with the secret key
         const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
         const { items } = req.body;
+
+        if (!items?.length) {
+            return res.status(400).json({ message: 'No items in cart' });
+        }
 
         // Create line items for Stripe
         const lineItems = items.map(item => ({
@@ -17,7 +22,8 @@ export default async function handler(req, res) {
                     name: item.name,
                     images: [item.image],
                     metadata: {
-                        size: item.size
+                        size: item.size,
+                        productId: item.id
                     }
                 },
                 unit_amount: Math.round(item.price * 100), // Stripe uses cents
@@ -40,9 +46,13 @@ export default async function handler(req, res) {
             }
         });
 
+        // Return the session ID
         res.status(200).json({ sessionId: session.id });
     } catch (error) {
         console.error('Stripe error:', error);
-        res.status(500).json({ message: 'Checkout session creation failed' });
+        res.status(500).json({ 
+            message: 'Checkout session creation failed',
+            error: error.message 
+        });
     }
 }

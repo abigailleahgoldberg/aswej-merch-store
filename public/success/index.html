@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+    <title>Order Successful - JewSA</title>
+    <style>
+        /* ... keeping consistent styles ... */
+        .success-page {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .success-icon {
+            font-size: 4rem;
+            color: #4CAF50;
+            margin-bottom: 1rem;
+        }
+
+        .success-message {
+            margin-bottom: 2rem;
+        }
+
+        .button {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="main-nav">
+            <a href="/" class="nav-link">Shop</a>
+            <h1>JewSA</h1>
+            <div class="cart-icon">
+                🛒 <span id="cart-count">0</span>
+            </div>
+        </nav>
+        <p class="tagline">Where Pride Meets Punchlines</p>
+    </header>
+    
+    <main>
+        <div class="success-page">
+            <div class="success-icon">✓</div>
+            <h2>Order Successful!</h2>
+            <div class="success-message">
+                <p>Thank you for your order. We'll start working on it right away!</p>
+                <p>You'll receive a confirmation email shortly.</p>
+            </div>
+            <a href="/" class="button">Continue Shopping</a>
+        </div>
+    </main>
+
+    <footer>
+        <p>© 2026 JewSA - Proudly printed on demand</p>
+    </footer>
+
+    <script>
+        // Clear the cart after successful order
+        localStorage.removeItem('jewsa-cart');
+    </script>
+</body>
+</html>
