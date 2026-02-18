@@ -1,9 +1,11 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const fetch = require('node-fetch');
+const { buffer } = require('micro');
 
 const createPrintfulOrder = async (session) => {
     const items = JSON.parse(session.metadata.items);
-    const address = session.shipping;
+    // shipping_details in newer Stripe API versions (2022+), fallback to shipping for older
+    const address = session.shipping_details || session.shipping;
 
     // Map cart items to Printful variant IDs
     const orderItems = items.map(item => ({
@@ -76,14 +78,17 @@ const getSyncVariantId = (productId, size, color) => {
     return variantMap[productId][size];
 };
 
-module.exports = async (req, res) => {
+const handler = async (req, res) => {
     const sig = req.headers['stripe-signature'];
     let event;
 
     try {
+        // Get raw body buffer for signature verification
+        const rawBody = await buffer(req);
+
         // Verify webhook signature
         event = stripe.webhooks.constructEvent(
-            req.body,
+            rawBody,
             sig,
             process.env.STRIPE_WEBHOOK_SECRET
         );
@@ -113,4 +118,12 @@ module.exports = async (req, res) => {
 
     // Return 200 for other events
     res.json({ received: true });
+};
+
+// Disable Vercel body parsing — Stripe needs the raw body for signature verification
+module.exports = handler;
+module.exports.config = {
+    api: {
+        bodyParser: false,
+    },
 };
