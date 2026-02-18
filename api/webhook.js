@@ -4,8 +4,10 @@ const { buffer } = require('micro');
 
 const createPrintfulOrder = async (session) => {
     const items = JSON.parse(session.metadata.items);
-    // shipping_details in newer Stripe API versions (2022+), fallback to shipping for older
-    const address = session.shipping_details || session.shipping;
+    // Stripe 2026+ API: shipping is under collected_information.shipping_details
+    const address = session.collected_information?.shipping_details
+        || session.shipping_details
+        || session.shipping;
 
     // Map cart items to Printful variant IDs
     const orderItems = items.map(item => ({
